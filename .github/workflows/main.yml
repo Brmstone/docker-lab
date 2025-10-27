@@ -26,9 +26,10 @@ jobs:
 
   test-sonar:
     runs-on: utuntu-24.04
-
-    run: mvn -B verify sonar:sonar -Dsonar.projectKey=Brmstone_docker-lab -Dsonar.organization=brmstone -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }}  --file ./pom.xml
-    working-directory: TP1/java/simpleapi/simpleapi/
+    steps:
+      - name: Build and test with Sonar
+        run: mvn -B verify sonar:sonar -Dsonar.projectKey=Brmstone_docker-lab -Dsonar.organization=brmstone -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }}  --file ./pom.xml
+        working-directory: TP1/java/simpleapi/simpleapi/
 
   build-and-push-docker-image:
     needs: test-maven
