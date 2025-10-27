@@ -25,6 +25,7 @@ jobs:
         working-directory: TP1/java/simpleapi/simpleapi/
 
   test-sonar:
+    needs: test-maven
     runs-on: utuntu-24.04
     steps:
       - name: Build and test with Sonar
