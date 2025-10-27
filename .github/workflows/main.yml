@@ -22,4 +22,4 @@ jobs:
 
       - name: Build and test with Maven
         run: mvn clean verify --file pom.xml
-        working-directory: ..\..\TP1\java\simpleapi\simpleapi\pom.xml
+        working-directory: ..\..\TP1\java\simpleapi\simpleapi\
