@@ -21,5 +21,35 @@ jobs:
           java-version: '21'
 
       - name: Build and test with Maven
-        run: mvn clean verify --file pom.xml
+        run: mvn clean verify
         working-directory: TP1/java/simpleapi/simpleapi/
+
+  build-and-push-docker-image:
+    needs: test-backend
+    # run only when code is compiling and tests are passing
+    runs-on: ubuntu-24.04
+
+    # steps to perform in job
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build image and push backend
+        uses: docker/build-push-action@v6
+        with:
+          context: TP1/java/simpleapi/simpleapi/
+          tags:  ${{secrets.DOCKER_USERNAME}}/tp-devops-simple-api:latest
+
+      - name: Build image and push database
+        uses: docker/build-push-action@v6
+        with:
+          context: TP1/database
+          tags:  ${{secrets.DOCKER_USERNAME}}/tp-devops-database:latest
+
+      - name: Build image and push httpd
+        uses: docker/build-push-action@v6
+        with:
+          context: TP1/http
+          tags:  ${{secrets.DOCKER_USERNAME}}/tp-devops-http:latest
+
+
