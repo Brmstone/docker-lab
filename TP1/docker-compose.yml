@@ -1,0 +1,47 @@
+services:
+    backend:
+        build:
+          ./java/simpleapi/simpleapi
+        ports:
+          - "8080:8080"
+        networks:
+          - netwoking
+        depends_on:
+          - database
+        environment:
+          DB_SERVER: database
+          DB_NAME: db
+          DB_USERNAME: usr
+          DB_PASSWORD: pwd
+
+# docker run -d --name=pstgrs --network=netwoking -v C:\Users\xxsou\OneDrive\Documents\GitHub\docker-lab\TP1\postgresdb:/var/lib/postgres/data pstgrs
+
+    database:
+        build:
+          ./database
+        networks:
+          - netwoking
+        volumes:
+          - postgresdb:/var/lib/postgres/data
+        environment:
+          POSTGRES_DB: db
+          POSTGRES_USER: usr
+          POSTGRES_PASSWORD: pwd 
+
+    httpd:
+        build:
+          ./http
+        ports:
+          - "80:80"
+        networks:
+          - netwoking
+        depends_on:
+          - backend
+        environment:
+          PAGE_NAME: backend
+
+networks:
+  netwoking:
+
+volumes:
+  postgresdb:
