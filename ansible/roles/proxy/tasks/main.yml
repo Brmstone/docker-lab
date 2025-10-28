@@ -9,4 +9,4 @@
     ports: 
       - "80:80"
     env:
-      DB_SERV: "apipart"
+      DB_SERV: "app"
