@@ -1,0 +1,8 @@
+- name: Create docker netwoking
+  comunity.docker.docker_network:
+    name: netwoking
+    state: present
+- name: Create docker proxy-netwoke
+  comunity.docker.docker_network:
+    name: proxy-netwoke
+    state: present

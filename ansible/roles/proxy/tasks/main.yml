@@ -1,0 +1,11 @@
+  - name: Run HTTPD
+    docker_container:
+      name: httpd
+      image: brmstone/tp-devops-http
+      restart_policy: no
+      networks:
+        - name: proxy-netwoke
+      ports: 
+        - "80:80"
+      env:
+        PAGE_NAME: "app"

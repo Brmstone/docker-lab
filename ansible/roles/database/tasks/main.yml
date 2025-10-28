@@ -1,0 +1,13 @@
+- name: Start db
+  community.docker.docker_container:
+    name: database
+    image: brmstone/tp-devops-database
+    restart_policy: unless-stopped
+    volumes:
+      - pstgres-data:/var/lib/postgresql/data
+    networks:
+      - name: netwoking
+    env:
+      POSTGRES_DB: "{{ DB_NAME }}"
+      POSTGRES_USER: "{{ DB_USERNAME }}"
+      POSTGRES_PASSWORD: "{{ DB_PASSWORD }}"
