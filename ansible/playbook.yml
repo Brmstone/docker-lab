@@ -1,5 +1,5 @@
 - hosts: all
-  gather_facts: false
+  gather_facts: true
   become: true
 
   vars_files:
@@ -12,10 +12,10 @@
     DB_PASSWORD: "{{ VAULT_DB_PASSWORD }}"
 
   roles:
-    - app
-    - database
-    - docker
     - env 
-    - network 
-    - proxy
+    - docker
     - volume
+    - network 
+    - database
+    - app
+    - proxy

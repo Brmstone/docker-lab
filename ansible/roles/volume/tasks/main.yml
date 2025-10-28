@@ -1,4 +1,4 @@
 - name: Create Docker volume for pstgres
-  comunity.docker.docker_volume:
+  community.docker.docker_volume:
     name: pstgres-data
     state: present
