@@ -2,6 +2,7 @@
   community.docker.docker_container:
     name: database
     image: brmstone/tp-devops-database
+    pull: "always"
     restart_policy: unless-stopped
     volumes:
       - pstgres-data:/var/lib/postgresql/data

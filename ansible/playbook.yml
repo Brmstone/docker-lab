@@ -6,7 +6,7 @@
     - "vault.yml"
 
   vars:
-    DB_SERVER: "{{ VAULT_SERVER }}"
+    DB_SERV: "{{ VAULT_SERVER }}"
     DB_NAME: "{{ VAULT_DB_NAME }}"
     DB_USERNAME: "{{ VAULT_DB_USERNAME }}"
     DB_PASSWORD: "{{ VAULT_DB_PASSWORD }}"

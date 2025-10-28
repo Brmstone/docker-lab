@@ -1,14 +1,15 @@
 - name: Launch API
   community.docker.docker_container:
-    name: app
+    name: apipart #app
     image: brmstone/tp-devops-simple-api
+    pull: "always"
     networks:
       - name: netwoking
       - name: proxy-netwoke
     restart_policy: on-failure
     restart_retries: 3
     env:
-      DB_SERVER: "database"
+      DB_SERVER: "{{ DB_SERV }}" #"database"
       DB_NAME: "{{ DB_NAME }}"
       DB_USERNAME: "{{ DB_USERNAME }}"
       DB_PASSWORD: "{{ DB_PASSWORD }}"

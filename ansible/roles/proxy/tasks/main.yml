@@ -2,6 +2,7 @@
   docker_container:
     name: httpd
     image: brmstone/tp-devops-http
+    pull: "always"
     restart_policy: no
     networks:
       - name: proxy-netwoke
