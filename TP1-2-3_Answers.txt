@@ -1,0 +1,195 @@
+TP 1 :
+
+1 - 1)
+Using a -e flag when running a container to give the environment variables is better because it makes it so that the variables are not stored within the image as they are instead stored as environment variables, making it more safe. Additionally, it makes it so that you can reuse the same image for different environments.
+
+1 - 2)
+We want to attach a volume to our postgres container because, unlike docker containers, this volume is a persistent storage location that will not be temporary, it will stay even if the container stops or is removed.
+
+1 - 3)
+Dockerfile:
+FROM postgres:17.2-alpine
+ #We declare our environment variables
+ENV POSTGRES_DB=db \
+   POSTGRES_USER=usr \
+   POSTGRES_PASSWORD=pwd
+#We declare where we will copy our file to store it.
+COPY ./docker-entrypoint-initdb.d/* /docker-entrypoint-initdb.d/ 
+
+Commands:
+docker build -t pstgres .
+docker run -p 8888:5000 --net=app-network --name=postgre_db -d -v ./postgresdb:/var/lib/postgresql/data pstgres 
+# Building and running our image.
+
+1 - 4)
+A multistage build is defined by multiple FROM statements that each represent a different build stage. Our stages here are : 1- the database part, 2- the api / backend part, 3- proxy / httpd part.
+
+1 - 5)
+We need a reverse proxy for better security as it hides your internal infrastructure such as the container IP or the ports you use from the outside world. It also allows for a more clear routing as it allows you to run different services on the same port.
+
+1 - 6)
+A docker-compose file is an important tool as it allows you to define and manage multi-container applications. Indeed, it simplifies orchestration of the applications, manages dependencies, centralizes configurations, and supports volumes, networks, environments and variables very easily by storing / declaring them all in a yaml file.
+
+1 - 7)
+The most important parts of my docker-compose file are the following:
+ 
+ - build, which tells the docker to build the image from the dockerfile at that path.
+ - ports, which defines the port.
+ - depends_on, which defines dependencies.
+ - environment, which passes the db connection variables to the backend.
+ - networks, which allows to connect everything to a network to connect them.
+
+1 - 8)
+services:
+    backend:
+        build:
+          ./java/simpleapi/simpleapi
+        ports:
+          - "8080:8080" #We declare the ports
+        networks:
+          - netwoking	#We declare the networks we will be on
+        depends_on:
+          - database	#We declare the database we need
+        environment:	#We declare our environment variables.
+          DB_SERVER: database
+          DB_NAME: db
+          DB_USERNAME: usr
+          DB_PASSWORD: pwd
+
+    database:
+        build:
+          ./database
+        networks:
+          - netwoking
+        volumes:
+          - postgresdb:/var/lib/postgres/data #We explain where we will place our data. 
+        environment:
+          POSTGRES_DB: db
+          POSTGRES_USER: usr
+          POSTGRES_PASSWORD: pwd 
+
+    httpd:
+        build:
+          ./http
+        ports:
+          - "80:80"
+        networks:
+          - netwoking
+        depends_on:
+          - backend
+        environment:
+          PAGE_NAME: backend
+
+networks:
+  netwoking:
+
+volumes:
+  postgresdb:
+
+
+
+TP 2 :
+
+2 - 1) 
+Testcontainers is a library that lets you run lightweight and throwaway docker containers for integration tests.
+
+2 - 2)
+As their name suggest, we need these secured variables to store critical informations such as passwords, api keys, database credentials, …
+
+2 - 3)
+We added "needs: build-and-test-backend" as it makes sure we compile the backend code before publishing the image, ensuring we do not release a broken image. 
+
+2 - 4)
+We push docker images for a few reasons, first of all, in case we want to make them accessible to more people, secondly, to deploy it automatically, like we aim to do here with GitHub actions, lastly , it allows for adding tags to images as versions identifiers. 
+
+
+TP3 :
+
+3 - 1)
+Base commands:
+ansible all -i inventories/setup.yml -m ping
+ssh -i ../id_rsa admin@julien.jaillet.takima.cloud
+
+Inventory:
+all:
+  vars: #we declare with those our different variables that will allow us to connect whenever we want to access to our 'virtual machine' (we dont know if it 	#is a server or an actual vm (schrodinger's vm if you will)) (whom we access through ssh)
+    ansible_user: admin  
+    ansible_ssh_private_key_file: ../id_rsa
+  children:
+    prod:
+      hosts: julien.jaillet.takima.cloud
+
+3 - 2)
+#Hosts: all allows to declare that you want to communicate with all of your servers
+- hosts: all
+  gather_facts: true
+  become: true 
+  
+  #Here we call our vault file in which all of our environment variables are stored
+  vars_files:
+    - "vault.yml"
+  #Here we assign those encrypted variables to variable names so that we can use them more easely afterwards
+  vars:
+    DB_SERV: "{{ VAULT_SERVER }}"
+    DB_NAME: "{{ VAULT_DB_NAME }}"
+    DB_USERNAME: "{{ VAULT_DB_USERNAME }}"
+    DB_PASSWORD: "{{ VAULT_DB_PASSWORD }}"
+
+  #Here we declare which roles and in what order they are going to be called to launch the page.
+  roles:
+    - env 
+    - docker
+    - volume
+    - network 
+    - database
+    - app
+    - proxy
+
+3 - 3)
+
+api / backend:
+- name: Launch API
+  community.docker.docker_container:
+    name: apipart #we name it
+    image: brmstone/tp-devops-simple-api
+    pull: "always" #We make sure we always pull the api when we restart the page
+    networks:
+      - name: netwoking
+      - name: proxy-netwoke #We put it on both networks as it will communicate with the proxy and the backend
+    restart_policy: on-failure
+    restart_retries: 3
+    env: #We declare our environment variables 
+      DB_SERVER: "database"
+      DB_NAME: "{{ DB_NAME }}"
+      DB_USERNAME: "{{ DB_USERNAME }}"
+      DB_PASSWORD: "{{ DB_PASSWORD }}"
+
+database:
+- name: Start db
+  community.docker.docker_container:
+    name: database
+    image: brmstone/tp-devops-database
+    pull: "always" #Same as Launch API
+    restart_policy: unless-stopped
+    volumes: #We declare where we will store our database.
+      - pstgres-data:/var/lib/postgresql/data
+    networks:
+      - name: netwoking
+    env:
+      POSTGRES_DB: "{{ DB_NAME }}"
+      POSTGRES_USER: "{{ DB_USERNAME }}"
+      POSTGRES_PASSWORD: "{{ DB_PASSWORD }}"
+
+proxy:
+- name: Run HTTPD
+  docker_container:
+    name: httpd
+    image: brmstone/tp-devops-http
+    pull: "always" #Same as our db and api
+    restart_policy: no
+    networks:
+      - name: proxy-netwoke
+    ports: #We declare the port to show (no port)
+      - "80:80"
+    env:
+      DB_SERV: "apipart"
