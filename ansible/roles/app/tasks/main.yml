@@ -9,7 +9,8 @@
     restart_policy: on-failure
     restart_retries: 3
     env:
-      DB_SERVER: "{{ DB_SERV }}" #"database"
+      #DB_SERVER: "{{ DB_SERV }}" #"database"
+      DB_SERVER: "database"
       DB_NAME: "{{ DB_NAME }}"
       DB_USERNAME: "{{ DB_USERNAME }}"
       DB_PASSWORD: "{{ DB_PASSWORD }}"
