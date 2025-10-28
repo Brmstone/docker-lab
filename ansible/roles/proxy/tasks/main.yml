@@ -9,4 +9,4 @@
     ports: 
       - "80:80"
     env:
-      PAGE_NAME: "app"
+      DB_SERV: "app"
